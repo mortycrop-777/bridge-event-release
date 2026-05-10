@@ -1,0 +1,1574 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>信息发布管理后台</title>
+    <style>
+        /* ========== 基础样式 ========== */
+        :root {
+            --primary-color: #1a56db;
+            --primary-dark: #1e40af;
+            --success-color: #059669;
+            --danger-color: #dc2626;
+            --warning-color: #d97706;
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* ========== 登录页面 ========== */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        }
+
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 400px;
+            margin: 20px;
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-logo .icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .login-logo h1 {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .login-logo p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .form-input.error {
+            border-color: var(--danger-color);
+        }
+
+        .error-message {
+            color: var(--danger-color);
+            font-size: 0.85rem;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .login-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .login-btn:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+        }
+
+        .login-hint {
+            text-align: center;
+            margin-top: 20px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        /* ========== 管理后台 ========== */
+        .admin-container {
+            display: none;
+        }
+
+        .admin-container.show {
+            display: block;
+        }
+
+        /* 头部导航 */
+        .admin-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+
+        .admin-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .admin-header h1 {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .admin-header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .admin-user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* 主内容区 */
+        .admin-main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* 标签页导航 */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            background: white;
+            padding: 8px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover {
+            background: #f1f5f9;
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* 面板 */
+        .panel {
+            display: none;
+        }
+
+        .panel.show {
+            display: block;
+        }
+
+        /* 卡片 */
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+        }
+
+        .card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        /* 表单 */
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        textarea.form-input {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* 按钮 */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #047857;
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #b45309;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .btn-outline:hover {
+            background: #f1f5f9;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* 表格 */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .pin-badge {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-right: 8px;
+        }
+
+        /* 操作日志 */
+        .log-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .log-item:last-child {
+            border-bottom: none;
+        }
+
+        .log-time {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            min-width: 140px;
+        }
+
+        .log-content {
+            flex: 1;
+        }
+
+        .log-action {
+            font-weight: 500;
+        }
+
+        .log-detail {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* 提示框 */
+        .toast {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            padding: 14px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            background: var(--success-color);
+        }
+
+        .toast.error {
+            background: var(--danger-color);
+        }
+
+        .toast.warning {
+            background: var(--warning-color);
+        }
+
+        /* 数据导入导出 */
+        .data-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        /* 密码修改提示 */
+        .password-warning {
+            background: #fef3c7;
+            border: 1px solid #fbbf24;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #92400e;
+            font-size: 0.9rem;
+        }
+
+        /* 状态开关 */
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 26px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #cbd5e1;
+            transition: 0.3s;
+            border-radius: 26px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background: var(--success-color);
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(22px);
+        }
+
+        /* 模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            margin: 20px;
+        }
+
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 1.1rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .admin-header {
+                padding: 12px 16px;
+            }
+
+            .admin-header h1 {
+                font-size: 1.1rem;
+            }
+
+            .admin-main {
+                padding: 16px;
+            }
+
+            .tabs {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .btn-group .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .data-actions {
+                flex-direction: column;
+            }
+
+            .data-actions .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ========== 登录页面 ========== -->
+    <div class="login-container" id="loginPage">
+        <div class="login-box">
+            <div class="login-logo">
+                <div class="icon">🏛️</div>
+                <h1>信息发布管理后台</h1>
+                <p>跨江大桥事件应急管理系统</p>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">管理密码</label>
+                <input 
+                    type="password" 
+                    class="form-input" 
+                    id="passwordInput" 
+                    placeholder="请输入管理密码"
+                    onkeydown="handleLoginKeyDown(event)"
+                >
+                <div class="error-message" id="loginError">
+                    密码错误，请重试
+                </div>
+            </div>
+            
+            <button class="login-btn" id="loginBtn" onclick="handleLogin()">
+                登录
+            </button>
+            
+            <div class="login-hint">
+                <p>默认密码：admin123</p>
+                <p style="margin-top: 5px; color: #dc2626;">⚠️ 请首次登录后立即修改密码</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 管理后台 ========== -->
+    <div class="admin-container" id="adminPage">
+        <!-- 头部导航 -->
+        <header class="admin-header">
+            <div class="admin-header-left">
+                <span style="font-size: 1.5rem;">🏛️</span>
+                <h1>信息发布管理后台</h1>
+            </div>
+            <div class="admin-header-right">
+                <div class="admin-user">
+                    <span>👤</span>
+                    <span>管理员</span>
+                </div>
+                <button class="logout-btn" onclick="handleLogout()">退出登录</button>
+            </div>
+        </header>
+
+        <!-- 主内容区 -->
+        <main class="admin-main">
+            <!-- 标签页导航 -->
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('bulletins')">
+                    <span>📢</span>
+                    <span>通报管理</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('announcement')">
+                    <span>📜</span>
+                    <span>公告栏管理</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('settings')">
+                    <span>⚙️</span>
+                    <span>系统设置</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('logs')">
+                    <span>📋</span>
+                    <span>操作日志</span>
+                </button>
+            </div>
+
+            <!-- ========== 通报管理面板 ========== -->
+            <div class="panel show" id="panelBulletins">
+                <!-- 密码修改提示 -->
+                <div class="password-warning" id="passwordWarning">
+                    <span>⚠️</span>
+                    <span>您正在使用默认密码，请立即修改为安全密码！</span>
+                </div>
+
+                <!-- 添加通报表单 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span>➕</span>
+                            <span>发布新通报</span>
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <form id="bulletinForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">通报标题 *</label>
+                                    <input type="text" class="form-input" id="bulletinTitle" 
+                                           placeholder="例如：第一次情况通报" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">信息来源</label>
+                                    <input type="text" class="form-input" id="bulletinSource" 
+                                           placeholder="例如：市政府应急管理局" value="市政府应急管理局">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group full-width">
+                                    <label class="form-label">通报内容 *</label>
+                                    <textarea class="form-input" id="bulletinContent" 
+                                              placeholder="请输入通报的详细内容和要点..." 
+                                              rows="5" required></textarea>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <span>📌</span>
+                                        <span>置顶显示</span>
+                                    </label>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="bulletinPinned">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="btn-group">
+                                <button type="submit" class="btn btn-primary">
+                                    <span>✅</span>
+                                    <span>发布通报</span>
+                                </button>
+                                <button type="reset" class="btn btn-outline">
+                                    <span>🔄</span>
+                                    <span>重置表单</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 通报列表 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span>📋</span>
+                            <span>已发布通报</span>
+                        </h2>
+                        <span class="badge badge-info" id="bulletinCount">0 条</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table id="bulletinTable">
+                                <thead>
+                                    <tr>
+                                        <th>标题</th>
+                                        <th>来源</th>
+                                        <th>发布时间</th>
+                                        <th>状态</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bulletinTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="empty-state" id="bulletinEmpty">
+                            <div class="icon">📭</div>
+                            <p>暂无通报记录</p>
+                            <p>请在上方表单中添加第一条通报</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== 公告栏管理面板 ========== -->
+            <div class="panel" id="panelAnnouncement">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span>📜</span>
+                            <span>滚动公告内容</span>
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label class="form-label">公告内容（用 " · " 分隔多条）</label>
+                            <textarea class="form-input" id="announcementContent" 
+                                      placeholder="例如：欢迎访问官方信息发布平台 · 我们将持续更新事件进展 · 请以官方通报为准" 
+                                      rows="4"></textarea>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 8px;">
+                                提示：多条公告请用 " · " 符号分隔，公众端会循环滚动显示
+                            </p>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="saveAnnouncement()">
+                                <span>💾</span>
+                                <span>保存公告</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span>🔔</span>
+                            <span>快速公告模板</span>
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="btn-group" style="gap: 12px;">
+                            <button class="btn btn-outline" onclick="applyTemplate('处置中')">
+                                📍 当前处置进行中
+                            </button>
+                            <button class="btn btn-outline" onclick="applyTemplate('有新进展')">
+                                🔔 有新进展发布
+                            </button>
+                            <button class="btn btn-outline" onclick="applyTemplate('交通')">
+                                🚗 交通疏导提示
+                            </button>
+                            <button class="btn btn-outline" onclick="applyTemplate('不信谣')">
+                                ⚠️ 不信谣不传谣
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== 系统设置面板 ========== -->
+            <div class="panel" id="panelSettings">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span>🔐</span>
+                            <span>密码设置</span>
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">新密码</label>
+                                <input type="password" class="form-input" id="newPassword" 
+                                       placeholder="请输入新密码（至少6位）">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">确认密码</label>
+                                <input type="password" class="form-input" id="confirmPassword" 
+                                       placeholder="请再次输入新密码">
+                            </div>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="changePassword()">
+                                <span>🔒</span>
+                                <span>修改密码</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span>📊</span>
+                            <span>数据管理</span>
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="btn-group">
+                            <button class="btn btn-success" onclick="exportData()">
+                                <span>📤</span>
+                                <span>导出数据</span>
+                            </button>
+                            <label class="btn btn-warning">
+                                <span>📥</span>
+                                <span>导入数据</span>
+                                <input type="file" class="file-input" accept=".json" onchange="importData(event)">
+                            </label>
+                        </div>
+                        <div class="data-actions">
+                            <button class="btn btn-danger" onclick="clearAllData()">
+                                <span>🗑️</span>
+                                <span>清空所有数据</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span>📱</span>
+                            <span>公众端配置</span>
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label class="form-label">事件状态</label>
+                            <div class="btn-group">
+                                <button class="btn btn-success" onclick="setEventStatus('progress')">
+                                    🟢 处置进行中
+                                </button>
+                                <button class="btn btn-warning" onclick="setEventStatus('update')">
+                                    🟠 有新进展
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-top: 16px;">
+                            <label class="form-label">事件时间设置</label>
+                            <input type="text" class="form-input" id="eventTimeInput" 
+                                   placeholder="例如：今日 10:00" style="max-width: 300px;">
+                            <button class="btn btn-outline" onclick="saveEventTime()" style="margin-top: 8px;">
+                                保存
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== 操作日志面板 ========== -->
+            <div class="panel" id="panelLogs">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span>📋</span>
+                            <span>操作日志</span>
+                        </h2>
+                        <button class="btn btn-outline" onclick="clearLogs()">
+                            <span>🗑️</span>
+                            <span>清空日志</span>
+                        </button>
+                    </div>
+                    <div class="card-body" id="logsContainer">
+                        <div class="empty-state" id="logsEmpty">
+                            <div class="icon">📝</div>
+                            <p>暂无操作记录</p>
+                        </div>
+                        <div id="logsList"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ========== Toast 提示 ========== -->
+    <div class="toast" id="toast"></div>
+
+    <!-- ========== 确认删除模态框 ========== -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>确认操作</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">确定要执行此操作吗？</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal()">取消</button>
+                <button class="btn btn-danger" id="confirmBtn">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ========================================
+         * 全局配置
+         */
+        const DEFAULT_PASSWORD = 'admin123';
+        const STORAGE_KEYS = {
+            PASSWORD: 'admin_password',
+            BULLETINS: 'bulletins',
+            ANNOUNCEMENT: 'announcement_content',
+            LOGS: 'admin_logs',
+            EVENT_STATUS: 'eventStatus',
+            EVENT_INFO: 'eventInfo'
+        };
+
+        let currentDeleteId = null;
+
+        /* ========================================
+         * 初始化
+         */
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查是否已登录
+            if (sessionStorage.getItem('adminLoggedIn') === 'true') {
+                showAdminPage();
+            }
+
+            // 初始化表单提交事件
+            document.getElementById('bulletinForm').addEventListener('submit', handleBulletinSubmit);
+
+            // 检查默认密码
+            checkDefaultPassword();
+        });
+
+        /* ========================================
+         * 登录处理
+         */
+        function handleLogin() {
+            const password = document.getElementById('passwordInput').value;
+            const savedPassword = localStorage.getItem(STORAGE_KEYS.PASSWORD) || DEFAULT_PASSWORD;
+            const errorEl = document.getElementById('loginError');
+
+            if (password === savedPassword) {
+                sessionStorage.setItem('adminLoggedIn', 'true');
+                errorEl.classList.remove('show');
+                document.getElementById('passwordInput').classList.remove('error');
+                showAdminPage();
+            } else {
+                errorEl.classList.add('show');
+                document.getElementById('passwordInput').classList.add('error');
+            }
+        }
+
+        function handleLoginKeyDown(event) {
+            if (event.key === 'Enter') {
+                handleLogin();
+            }
+        }
+
+        function handleLogout() {
+            sessionStorage.removeItem('adminLoggedIn');
+            document.getElementById('loginPage').style.display = 'flex';
+            document.getElementById('adminPage').classList.remove('show');
+            document.getElementById('passwordInput').value = '';
+        }
+
+        function showAdminPage() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('adminPage').classList.add('show');
+            loadBulletins();
+            loadAnnouncement();
+            loadLogs();
+        }
+
+        /* ========================================
+         * 标签页切换
+         */
+        function switchTab(tabName) {
+            // 更新按钮状态
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.closest('.tab-btn').classList.add('active');
+
+            // 更新面板显示
+            document.querySelectorAll('.panel').forEach(panel => {
+                panel.classList.remove('show');
+            });
+            document.getElementById('panel' + capitalize(tabName)).classList.add('show');
+        }
+
+        function capitalize(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        /* ========================================
+         * Toast 提示
+         */
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast ' + type;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        /* ========================================
+         * 通报管理
+         */
+        function handleBulletinSubmit(e) {
+            e.preventDefault();
+
+            const title = document.getElementById('bulletinTitle').value.trim();
+            const source = document.getElementById('bulletinSource').value.trim();
+            const content = document.getElementById('bulletinContent').value.trim();
+            const pinned = document.getElementById('bulletinPinned').checked;
+
+            if (!title || !content) {
+                showToast('请填写标题和内容', 'error');
+                return;
+            }
+
+            const bulletin = {
+                id: Date.now().toString(),
+                title,
+                source: source || '市政府应急管理局',
+                content,
+                pinned,
+                createTime: new Date().toISOString()
+            };
+
+            // 获取现有通报
+            let bulletins = JSON.parse(localStorage.getItem(STORAGE_KEYS.BULLETINS) || '[]');
+            bulletins.unshift(bulletin);
+
+            // 保存
+            localStorage.setItem(STORAGE_KEYS.BULLETINS, JSON.stringify(bulletins));
+
+            // 添加日志
+            addLog('发布通报', `标题：${title}`);
+
+            // 更新UI
+            loadBulletins();
+
+            // 重置表单
+            document.getElementById('bulletinForm').reset();
+            document.getElementById('bulletinSource').value = '市政府应急管理局';
+
+            showToast('通报发布成功');
+        }
+
+        function loadBulletins() {
+            const bulletins = JSON.parse(localStorage.getItem(STORAGE_KEYS.BULLETINS) || '[]');
+            const tbody = document.getElementById('bulletinTableBody');
+            const emptyEl = document.getElementById('bulletinEmpty');
+            const countEl = document.getElementById('bulletinCount');
+
+            countEl.textContent = bulletins.length + ' 条';
+
+            if (bulletins.length === 0) {
+                tbody.innerHTML = '';
+                emptyEl.style.display = 'block';
+                return;
+            }
+
+            emptyEl.style.display = 'none';
+
+            tbody.innerHTML = bulletins.map(b => {
+                const time = new Date(b.createTime);
+                const timeStr = `${time.getFullYear()}-${pad(time.getMonth() + 1)}-${pad(time.getDate())} ${pad(time.getHours())}:${pad(time.getMinutes())}`;
+                
+                return `
+                    <tr>
+                        <td>
+                            ${b.pinned ? '<span class="pin-badge">置顶</span>' : ''}
+                            <strong>${escapeHtml(b.title)}</strong>
+                        </td>
+                        <td>${escapeHtml(b.source)}</td>
+                        <td>${timeStr}</td>
+                        <td>
+                            <span class="badge ${b.pinned ? 'badge-warning' : 'badge-success'}">
+                                ${b.pinned ? '已置顶' : '正常'}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group" style="flex-wrap: nowrap;">
+                                <button class="btn btn-outline" style="padding: 6px 10px;" onclick="togglePin('${b.id}')" title="${b.pinned ? '取消置顶' : '置顶'}">
+                                    ${b.pinned ? '📌' : '📍'}
+                                </button>
+                                <button class="btn btn-outline" style="padding: 6px 10px;" onclick="editBulletin('${b.id}')" title="编辑">
+                                    ✏️
+                                </button>
+                                <button class="btn btn-danger" style="padding: 6px 10px;" onclick="confirmDelete('${b.id}')" title="删除">
+                                    🗑️
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function togglePin(id) {
+            let bulletins = JSON.parse(localStorage.getItem(STORAGE_KEYS.BULLETINS) || '[]');
+            const bulletin = bulletins.find(b => b.id === id);
+            
+            if (bulletin) {
+                bulletin.pinned = !bulletin.pinned;
+                localStorage.setItem(STORAGE_KEYS.BULLETINS, JSON.stringify(bulletins));
+                loadBulletins();
+                addLog(bulletin.pinned ? '置顶通报' : '取消置顶', `标题：${bulletin.title}`);
+                showToast(bulletin.pinned ? '已置顶' : '已取消置顶');
+            }
+        }
+
+        function editBulletin(id) {
+            const bulletins = JSON.parse(localStorage.getItem(STORAGE_KEYS.BULLETINS) || '[]');
+            const bulletin = bulletins.find(b => b.id === id);
+            
+            if (bulletin) {
+                document.getElementById('bulletinTitle').value = bulletin.title;
+                document.getElementById('bulletinSource').value = bulletin.source;
+                document.getElementById('bulletinContent').value = bulletin.content;
+                document.getElementById('bulletinPinned').checked = bulletin.pinned;
+                
+                // 删除原记录（重新添加就是修改）
+                confirmDelete(id);
+                
+                // 滚动到表单
+                document.querySelector('.card-header').scrollIntoView({ behavior: 'smooth' });
+                showToast('已加载通报内容，请修改后重新发布');
+            }
+        }
+
+        function confirmDelete(id) {
+            currentDeleteId = id;
+            document.getElementById('confirmMessage').textContent = '确定要删除这条通报吗？此操作不可恢复。';
+            document.getElementById('confirmModal').classList.add('show');
+            
+            document.getElementById('confirmBtn').onclick = function() {
+                deleteBulletin(id);
+                closeModal();
+            };
+        }
+
+        function deleteBulletin(id) {
+            let bulletins = JSON.parse(localStorage.getItem(STORAGE_KEYS.BULLETINS) || '[]');
+            const deleted = bulletins.find(b => b.id === id);
+            bulletins = bulletins.filter(b => b.id !== id);
+            
+            localStorage.setItem(STORAGE_KEYS.BULLETINS, JSON.stringify(bulletins));
+            loadBulletins();
+            
+            if (deleted) {
+                addLog('删除通报', `标题：${deleted.title}`);
+            }
+            
+            showToast('已删除');
+        }
+
+        /* ========================================
+         * 公告栏管理
+         */
+        function loadAnnouncement() {
+            const content = localStorage.getItem(STORAGE_KEYS.ANNOUNCEMENT) || '';
+            document.getElementById('announcementContent').value = content;
+        }
+
+        function saveAnnouncement() {
+            const content = document.getElementById('announcementContent').value.trim();
+            localStorage.setItem(STORAGE_KEYS.ANNOUNCEMENT, content);
+            
+            addLog('更新公告栏', content.substring(0, 50));
+            showToast('公告保存成功');
+        }
+
+        function applyTemplate(type) {
+            const templates = {
+                '处置中': '⚠️ 当前应急处置正在进行中，请市民配合现场指挥',
+                '有新进展': '🔔 重要通报：最新处置进展已发布，请点击查看',
+                '交通': '🚗 交通提示：跨江大桥正在逐步恢复通行，请耐心等候',
+                '不信谣': '⚠️ 温馨提示：请以官方正式通报为准，不信谣、不传谣'
+            };
+
+            const current = document.getElementById('announcementContent').value.trim();
+            const newContent = templates[type];
+
+            if (current) {
+                document.getElementById('announcementContent').value = current + ' · ' + newContent;
+            } else {
+                document.getElementById('announcementContent').value = newContent;
+            }
+
+            showToast('已应用模板');
+        }
+
+        /* ========================================
+         * 系统设置
+         */
+        function checkDefaultPassword() {
+            const savedPassword = localStorage.getItem(STORAGE_KEYS.PASSWORD);
+            if (!savedPassword || savedPassword === DEFAULT_PASSWORD) {
+                document.getElementById('passwordWarning').style.display = 'flex';
+            } else {
+                document.getElementById('passwordWarning').style.display = 'none';
+            }
+        }
+
+        function changePassword() {
+            const newPass = document.getElementById('newPassword').value;
+            const confirmPass = document.getElementById('confirmPassword').value;
+
+            if (!newPass || newPass.length < 6) {
+                showToast('密码至少需要6位', 'error');
+                return;
+            }
+
+            if (newPass !== confirmPass) {
+                showToast('两次密码输入不一致', 'error');
+                return;
+            }
+
+            localStorage.setItem(STORAGE_KEYS.PASSWORD, newPass);
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+            
+            addLog('修改密码', '管理员修改了登录密码');
+            showToast('密码修改成功');
+            checkDefaultPassword();
+        }
+
+        function setEventStatus(status) {
+            localStorage.setItem(STORAGE_KEYS.EVENT_STATUS, status);
+            addLog('更新事件状态', status === 'progress' ? '处置进行中' : '有新进展');
+            showToast('状态已更新');
+        }
+
+        function saveEventTime() {
+            const eventTime = document.getElementById('eventTimeInput').value.trim();
+            const eventInfo = JSON.parse(localStorage.getItem(STORAGE_KEYS.EVENT_INFO) || '{}');
+            eventInfo.eventTime = eventTime;
+            localStorage.setItem(STORAGE_KEYS.EVENT_INFO, JSON.stringify(eventInfo));
+            
+            addLog('更新事件时间', eventTime);
+            showToast('事件时间已保存');
+        }
+
+        /* ========================================
+         * 数据导入导出
+         */
+        function exportData() {
+            const data = {
+                bulletins: JSON.parse(localStorage.getItem(STORAGE_KEYS.BULLETINS) || '[]'),
+                announcement: localStorage.getItem(STORAGE_KEYS.ANNOUNCEMENT) || '',
+                logs: JSON.parse(localStorage.getItem(STORAGE_KEYS.LOGS) || '[]'),
+                eventStatus: localStorage.getItem(STORAGE_KEYS.EVENT_STATUS) || 'progress',
+                eventInfo: JSON.parse(localStorage.getItem(STORAGE_KEYS.EVENT_INFO) || '{}'),
+                exportTime: new Date().toISOString()
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `admin_data_${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            addLog('导出数据', '导出全部管理数据');
+            showToast('数据导出成功');
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if (data.bulletins) {
+                        localStorage.setItem(STORAGE_KEYS.BULLETINS, JSON.stringify(data.bulletins));
+                    }
+                    if (data.announcement !== undefined) {
+                        localStorage.setItem(STORAGE_KEYS.ANNOUNCEMENT, data.announcement);
+                    }
+                    if (data.eventStatus) {
+                        localStorage.setItem(STORAGE_KEYS.EVENT_STATUS, data.eventStatus);
+                    }
+                    if (data.eventInfo) {
+                        localStorage.setItem(STORAGE_KEYS.EVENT_INFO, JSON.stringify(data.eventInfo));
+                    }
+
+                    loadBulletins();
+                    loadAnnouncement();
+                    
+                    addLog('导入数据', '从备份文件导入数据');
+                    showToast('数据导入成功');
+                } catch (err) {
+                    showToast('文件格式错误，导入失败', 'error');
+                }
+            };
+            reader.readAsText(file);
+            
+            // 清空 input
+            event.target.value = '';
+        }
+
+        function clearAllData() {
+            document.getElementById('confirmMessage').textContent = '确定要清空所有数据吗？这将删除所有通报、日志等信息。此操作不可恢复！';
+            document.getElementById('confirmModal').classList.add('show');
+            
+            document.getElementById('confirmBtn').onclick = function() {
+                localStorage.removeItem(STORAGE_KEYS.BULLETINS);
+                localStorage.removeItem(STORAGE_KEYS.ANNOUNCEMENT);
+                localStorage.removeItem(STORAGE_KEYS.LOGS);
+                localStorage.removeItem(STORAGE_KEYS.EVENT_STATUS);
+                localStorage.removeItem(STORAGE_KEYS.EVENT_INFO);
+                
+                loadBulletins();
+                loadAnnouncement();
+                
+                addLog('清空数据', '清空所有管理数据');
+                closeModal();
+                showToast('所有数据已清空');
+            };
+        }
+
+        /* ========================================
+         * 操作日志
+         */
+        function addLog(action, detail) {
+            const logs = JSON.parse(localStorage.getItem(STORAGE_KEYS.LOGS) || '[]');
+            
+            logs.unshift({
+                id: Date.now().toString(),
+                action,
+                detail,
+                time: new Date().toISOString()
+            });
+
+            // 只保留最近100条
+            if (logs.length > 100) {
+                logs.pop();
+            }
+
+            localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(logs));
+            loadLogs();
+        }
+
+        function loadLogs() {
+            const logs = JSON.parse(localStorage.getItem(STORAGE_KEYS.LOGS) || '[]');
+            const container = document.getElementById('logsList');
+            const emptyEl = document.getElementById('logsEmpty');
+
+            if (logs.length === 0) {
+                container.innerHTML = '';
+                emptyEl.style.display = 'block';
+                return;
+            }
+
+            emptyEl.style.display = 'none';
+
+            container.innerHTML = logs.map(log => {
+                const time = new Date(log.time);
+                const timeStr = `${time.getFullYear()}-${pad(time.getMonth() + 1)}-${pad(time.getDate())} ${pad(time.getHours())}:${pad(time.getMinutes())}:${pad(time.getSeconds())}`;
+                
+                return `
+                    <div class="log-item">
+                        <div class="log-time">${timeStr}</div>
+                        <div class="log-content">
+                            <div class="log-action">${escapeHtml(log.action)}</div>
+                            <div class="log-detail">${escapeHtml(log.detail)}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function clearLogs() {
+            document.getElementById('confirmMessage').textContent = '确定要清空所有操作日志吗？';
+            document.getElementById('confirmModal').classList.add('show');
+            
+            document.getElementById('confirmBtn').onclick = function() {
+                localStorage.removeItem(STORAGE_KEYS.LOGS);
+                loadLogs();
+                closeModal();
+                showToast('日志已清空');
+            };
+        }
+
+        /* ========================================
+         * 模态框
+         */
+        function closeModal() {
+            document.getElementById('confirmModal').classList.remove('show');
+        }
+
+        /* ========================================
+         * 工具函数
+         */
+        function pad(num) {
+            return num.toString().padStart(2, '0');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
